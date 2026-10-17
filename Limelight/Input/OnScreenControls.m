@@ -225,13 +225,16 @@ static float L3_Y;
             break;
         case OnScreenControlsLevelSimple:
             [self setupSimpleControls];
-            
+
             [self hideTriggers];
             [self hideL3R3];
             [self hideBumpers];
             [self hideSticks];
+            [self hideDPad];
             [self drawStartSelect];
-            [self drawButtons];
+            [self drawFaceButtons];
+            // The left stick replaces the D-pad in the simple layout
+            [self drawLeftStick];
             break;
         case OnScreenControlsLevelFull:
             [self setupComplexControls];
@@ -301,9 +304,13 @@ static float L3_Y;
     // Start with the default complex layout
     [self setupComplexControls];
     
+    // Put the left stick where the D-pad would be
+    LS_CENTER_X = _controlArea.size.width * .15 +_controlArea.origin.x;
+    LS_CENTER_Y = _controlArea.size.height * .65 + _controlArea.origin.y;
+
     START_Y = _controlArea.size.height * .9 + _controlArea.origin.y;
     SELECT_Y = _controlArea.size.height * .9 + _controlArea.origin.y;
-    
+
     L2_Y = _controlArea.size.height * .9 + _controlArea.origin.y;
     L2_X = _controlArea.size.width * .1 + _controlArea.origin.x;
 
@@ -374,6 +381,11 @@ static float L3_Y;
 }
 
 - (void) drawButtons {
+    [self drawFaceButtons];
+    [self drawDPad];
+}
+
+- (void) drawFaceButtons {
     UIImage* aButtonImage = [UIImage imageNamed:@"AButton"];
     UIImage* bButtonImage = [UIImage imageNamed:@"BButton"];
     UIImage* xButtonImage = [UIImage imageNamed:@"XButton"];
@@ -403,7 +415,9 @@ static float L3_Y;
     _yButton.frame = _swapABXY ? xButtonFrame : yButtonFrame;
     _yButton.contents = (id) yButtonImage.CGImage;
     [_view.layer addSublayer:_yButton];
-    
+}
+
+- (void) drawDPad {
     // create Down button
     UIImage* downButtonImage = [UIImage imageNamed:@"DownButton"];
     _downButton.frame = CGRectMake(D_PAD_CENTER_X - downButtonImage.size.width / 2, D_PAD_CENTER_Y + D_PAD_DIST, downButtonImage.size.width, downButtonImage.size.height);
@@ -472,6 +486,11 @@ static float L3_Y;
 }
 
 - (void) drawSticks {
+    [self drawLeftStick];
+    [self drawRightStick];
+}
+
+- (void) drawLeftStick {
     // create left analog stick
     UIImage* leftStickBgImage = [UIImage imageNamed:@"StickOuter"];
     _leftStickBackground.frame = CGRectMake(LS_CENTER_X - leftStickBgImage.size.width / 2, LS_CENTER_Y - leftStickBgImage.size.height / 2, leftStickBgImage.size.width, leftStickBgImage.size.height);
@@ -482,7 +501,12 @@ static float L3_Y;
     _leftStick.frame = CGRectMake(LS_CENTER_X - leftStickImage.size.width / 2, LS_CENTER_Y - leftStickImage.size.height / 2, leftStickImage.size.width, leftStickImage.size.height);
     _leftStick.contents = (id) leftStickImage.CGImage;
     [_view.layer addSublayer:_leftStick];
-    
+
+    STICK_INNER_SIZE = leftStickImage.size.width;
+    STICK_OUTER_SIZE = leftStickBgImage.size.width;
+}
+
+- (void) drawRightStick {
     // create right analog stick
     UIImage* rightStickBgImage = [UIImage imageNamed:@"StickOuter"];
     _rightStickBackground.frame = CGRectMake(RS_CENTER_X - rightStickBgImage.size.width / 2, RS_CENTER_Y - rightStickBgImage.size.height / 2, rightStickBgImage.size.width, rightStickBgImage.size.height);
@@ -519,6 +543,10 @@ static float L3_Y;
     [_bButton removeFromSuperlayer];
     [_xButton removeFromSuperlayer];
     [_yButton removeFromSuperlayer];
+    [self hideDPad];
+}
+
+- (void) hideDPad {
     [_upButton removeFromSuperlayer];
     [_downButton removeFromSuperlayer];
     [_leftButton removeFromSuperlayer];
@@ -963,11 +991,11 @@ static float L3_Y;
                      startY:_leftStickBackground.frame.origin.y - 15
                        endX:_leftStickBackground.frame.origin.x + _leftStickBackground.frame.size.width + 15
                        endY:_view.frame.origin.y + _view.frame.size.height]
-    || [self isDeadZone:touch
+    || (_rightStickBackground.superlayer != nil && [self isDeadZone:touch
                  startX:_rightStickBackground.frame.origin.x - 15
                  startY:_rightStickBackground.frame.origin.y - 15
                    endX:_rightStickBackground.frame.origin.x + _rightStickBackground.frame.size.width + 15
-                   endY:_view.frame.origin.y + _view.frame.size.height];
+                   endY:_view.frame.origin.y + _view.frame.size.height]);
 }
 
 - (BOOL) isDeadZone:(UITouch*) touch startX:(float)deadZoneStartX startY:(float)deadZoneStartY endX:(float)deadZoneEndX endY:(float)deadZoneEndY {
