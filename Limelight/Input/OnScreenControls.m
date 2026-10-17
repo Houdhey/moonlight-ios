@@ -237,14 +237,14 @@ static float L3_Y;
             [self drawLeftStick];
             break;
         case OnScreenControlsLevelFull:
-            [self setupComplexControls];
-            
+            [self setupFullControls];
+
             [self drawButtons];
             [self drawStartSelect];
             [self drawBumpers];
             [self drawTriggers];
             [self drawSticks];
-            [self hideL3R3]; // Full controls don't need these they have the sticks
+            [self drawL3R3];
             break;
         default:
             Log(LOG_W, @"Unknown on-screen controls level: %d", (int)_level);
@@ -330,6 +330,45 @@ static float L3_Y;
         SELECT_X = _controlArea.size.width * .4 + _controlArea.origin.x;
         START_X = _controlArea.size.width * .6 + _controlArea.origin.x;
     }
+}
+
+// Full layout for games that need every control (e.g. Red Dead Redemption 2):
+// D-pad above the left stick on the left, both sticks low, face buttons on
+// the right, bumpers/triggers on top, and L3/R3 as buttons.
+- (void) setupFullControls {
+    // Start with the default complex layout
+    [self setupComplexControls];
+
+    float w = _controlArea.size.width;
+    float h = _controlArea.size.height;
+    float ox = _controlArea.origin.x;
+    float oy = _controlArea.origin.y;
+
+    D_PAD_CENTER_X = w * .2 + ox;
+    D_PAD_CENTER_Y = h * .33 + oy;
+    LS_CENTER_X = w * .2 + ox;
+    LS_CENTER_Y = h * .78 + oy;
+
+    RS_CENTER_X = w * .72 + ox;
+    RS_CENTER_Y = h * .78 + oy;
+    BUTTON_CENTER_X = w * .88 + ox;
+    BUTTON_CENTER_Y = h * .5 + oy;
+
+    L1_X = L2_X = w * .07 + ox;
+    R1_X = R2_X = w * .93 + ox;
+    L2_Y = R2_Y = h * .08 + oy;
+    L1_Y = R1_Y = h * .25 + oy;
+
+    // Start and Select at the top center
+    SELECT_X = w * .44 + ox;
+    START_X = w * .56 + ox;
+    SELECT_Y = h * .08 + oy;
+    START_Y = h * .08 + oy;
+
+    L3_X = w * .33 + ox;
+    L3_Y = h * .86 + oy;
+    R3_X = w * .6 + ox;
+    R3_Y = h * .86 + oy;
 }
 
 - (void) setupComplexControls
